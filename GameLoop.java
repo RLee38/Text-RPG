@@ -8,6 +8,7 @@ import java.util.*;
 //IN GOBLIN GEN, I GEN GOBLINS THEN ERASE "G" FROM AROUND THE PLAYER, THIS DOESNT ERASE THE GOBLINS POSY AND POSX IN THE ARRAYLIST
 //(FIXED)WHEN PRINTING THE NAME OF THE SWORDS GENERATED FOR TREASURES METHOD RETURNS NULL
 //(FIXED)ERROR IN CASE 3 
+//When Reading case 4 and 3 i dont check to see if they are actually true i just check for the input from the player.
 public class GameLoop {
     static player myPlayer = characterCreation();
     
@@ -23,9 +24,9 @@ public class GameLoop {
     
     public static void printMap(int posY, int posX, String[][] mapper) {
         if (posY<10) posY = 10;
-          if (posY>99) posY = 139;  
+          if (posY>99) posY = 89;  
         if (posX<10) posX = 10;
-        if (posX>99) posX = 139;
+        if (posX>99) posX = 89;
         for (int i = 0; i<62;i++) {
             System.out.print("#");
         }
@@ -217,7 +218,12 @@ public class GameLoop {
         return myBoy;
     }
     
-    public static boolean eneNear(String[][] mapper, int PosY, int PosX,int[] latest) {
+    public static boolean eneNear(String[][] mapper, int PosY, int PosX, ArrayList<Integer> latest, ArrayList<Goblin> myGobs) {
+      for (int i = latest.size()-1; i>0;i--) {
+         myGobs.get(latest.get(i)).setBattleMode(false);
+         latest.remove(i);
+     }
+    // latest.remove(0);
        int wCY = 3;
         int wCX = 3;
         while (true) {
@@ -235,15 +241,24 @@ public class GameLoop {
               break;
             }
         }
-        
+       
         //System.out.println(wCY + "   " + wCX);
         for (int i = PosY-wCY;i<PosY+wCY;i++) {
             for (int j = PosX-wCX;j<PosX+wCX;j++) {
                // System.out.println(i + "   " + j);
                 if (mapper[i][j].equalsIgnoreCase("G")) {
-                    latest[0] = i;
-                    latest[1] = j;
-                    return true;
+                   for (int k = 0; k<myGobs.size();k++) {
+                       
+                       if (myGobs.get(k).getPosY() == i && myGobs.get(k).getPosX() == j) {
+                           System.out.println("ADDED TO LATEST");
+                           myGobs.get(k).setBattleMode(true);
+                           latest.add(k); 
+                           
+                       }
+                       
+                       
+                   }
+                   return true;
                 }
                 
             }
@@ -311,7 +326,7 @@ public class GameLoop {
         String[] swordNouns = nouns.split(" ");
         ArrayList<Goblin> goblinList = new ArrayList<>();
         ArrayList<NPC> npcList = new ArrayList<>();
-        int[] latestGob = new int[2];
+        ArrayList<Integer> latestGob = new ArrayList<>();
         int[] latestShop = new int[2];
         String[][] map = new String[100][100];                                     //^=mountain,   T=Tree,   S=Shopkeeper,   G=Goblins,   P=Player,   
         for (int i = 0; i<map.length;i++) {
@@ -334,11 +349,11 @@ public class GameLoop {
        // for (int i = 0; i<10;i++) {
        //shopkeeper gen?
       //  }
-        npcGen(map,25,25,swordAdj,swordNouns,npcList); npcGen(map,70,50,swordAdj,swordNouns,npcList);
+        npcGen(map,25,25,swordAdj,swordNouns,npcList); npcGen(map,70,50,swordAdj,swordNouns,npcList); npcGen(map,25,80,swordAdj,swordNouns,npcList); npcGen(map,50,25,swordAdj,swordNouns,npcList); npcGen(map,80,26,swordAdj,swordNouns,npcList);npcGen(map,80,80,swordAdj,swordNouns,npcList);
         
         
    
-    System.out.println("Jacob: Hey you, yeah you, youre finally awake. Good. Were almost there. The Kingdom of ****.\n Here, heres a map. Were located at the P. The ^ are mountains they are impassable. The T represent great trees These are impassable as well. \n An S represents a shopkeeper. Here you can use your hard earned Pesos to buy health or damage. A g represents a goblin but a capital G represents a goblin brute. Theyre dangerous and will attack given the chance.\n This map is magic it will update every time you move but it will only show you the surrounding lands. Not the whole world.");
+    System.out.println("Hey you, yeah you, youre finally awake. Good. Were almost there. The Kingdom of Worcestershire.\n Here, heres a map. Were located at the P. The ^ are mountains they are impassable. The T represent great trees These are impassable as well. \n An S represents a shopkeeper. Here you can use your hard earned Pesos to buy health or damage. A g represents a goblin but a capital G represents a goblin brute. Theyre dangerous and will attack given the chance.\n This map is magic it will update every time you move but it will only show you the surrounding lands. Not the whole world.");
    printMap(myPlayer.getPosY(),myPlayer.getPosX(),map);
   // map[myPlayer.getPosY()+1][myPlayer.getPosX()] = "g";
   // printMap(myPlayer.getPosY(),myPlayer.getPosX(),map);
@@ -354,7 +369,7 @@ public class GameLoop {
        } else {
            System.out.println("There is no one near");
        }
-       if (eneNear(map,myPlayer.getPosY(),myPlayer.getPosX(),latestGob)) {
+       if (eneNear(map,myPlayer.getPosY(),myPlayer.getPosX(),latestGob,goblinList)) {
        System.out.println("Enter (4) to attack");
        } else {
        System.out.println("There are no Goblins near");
@@ -377,6 +392,10 @@ public class GameLoop {
                  printMap(myPlayer.getPosY(),myPlayer.getPosX(),map);
                 break;
             } else if(direction.equalsIgnoreCase("N") || direction.equalsIgnoreCase("E") || direction.equalsIgnoreCase("S") || direction.equalsIgnoreCase("W")) {
+            //   if (latestGob.size()==1) {
+           // latestGob.remove(0);
+          //  }
+               eneNear(map,myPlayer.getPosY(),myPlayer.getPosX(),latestGob,goblinList);
                 if(myPlayer.move(map,direction)) {
                     //int whichAdj = (int) (Math.random()*swordAdj.length);
                     // int whichNoun = (int) (Math.random()*swordNouns.length);
@@ -387,6 +406,43 @@ public class GameLoop {
                 System.out.println("Invalid Entry");
             }
             
+            
+            
+            for (int i = 0; i<goblinList.size();i++) {
+                goblinList.get(i).randMove(map);
+            }
+            
+            
+            
+            /*
+            //Put an if statement here to see if they are engaged in combat
+            for (int j = 0; j<latestGob.size();j++) {
+            if (goblinList.get(latestGob.get(j)).getBattleMode()) {
+                System.out.println(j + "   " + latestGob.get(j));
+            if(goblinList.get(latestGob.get(j)).pathToPlayer(map,myPlayer.getPosY(),myPlayer.getPosX())) {
+                //ATTACK IN HERE
+                
+                
+                
+                
+                
+                
+                
+                }
+            } else {
+            for (int i = 0; i<goblinList.size();i++) {
+                for (int g = 0; g<latestGob.size();g++) {
+                if (i == latestGob.get(g)) {
+                } else {
+                goblinList.get(i).randMove(map);
+                }
+            }
+                }
+            }
+        
+            }
+        */
+        
         }
         
         break;
@@ -415,6 +471,7 @@ public class GameLoop {
     }
         break;
     case 3:  //case 3 handles the purchase of items and the distribution of quests
+    if (shopNear(map,myPlayer.getPosY(),myPlayer.getPosX(),latestShop)) {
     boolean contS = true;
     String tempor = "";
    
@@ -428,15 +485,15 @@ public class GameLoop {
        
         
         while(contS) {
-             System.out.println("(1) to shop for equipment\n(2) to gain a quest\n(9) to exit to main menu");
+             System.out.println("(1) to shop for equipment"/*\n(2) to gain a quest*/ + "\n(9) to exit to main menu");
         int witch = sc.nextInt();
         if(witch==1) {
              npcList.get(temp).printMySwords();
         System.out.println("Enter the name of the sword you would like to purchase: ");
        sc.nextLine();
         tempor = sc.nextLine();
-        npcList.get(temp).swordShop(tempor, myPlayer.getMoney(),myPlayer); // ERROR
-        } else if(witch==2) {
+       myPlayer.setMoney( npcList.get(temp).swordShop(tempor, myPlayer.getMoney(),myPlayer)); // ERROR
+       // } else if(witch==2) {
             //quests go here
             
             
@@ -458,12 +515,35 @@ public class GameLoop {
         
         
         
-        
-        
         break;
+    } else {
+        System.out.println("Invalid Entry");
+        break;
+    }
     case 4: // case 4 handles the attacking, not the detection of Goblins thats handled by the . You need to find out what instance of enemy is there as well as distributing damage and health
-        
-        
+        if (eneNear(map,myPlayer.getPosY(),myPlayer.getPosX(),latestGob,goblinList)) {
+          /*
+         if (map[myPlayer.getPosY()-1][myPlayer.getPosX()].equalsIgnoreCase("g")) {
+             for (int k = 0; k<goblinList.size();k++) {
+                 
+             }
+         } else if (map[myPlayer.getPosY()+1][myPlayer.getPosX()].equalsIgnoreCase("g")) {
+             
+         } else if (map[myPlayer.getPosY()][myPlayer.getPosX()+1].equalsIgnoreCase("g")) {
+             
+         } else if(map[myPlayer.getPosY()][myPlayer.getPosX()-1].equalsIgnoreCase("g")) {
+             
+         }
+          */
+          
+          
+          
+          
+          
+          
+          
+            
+        } 
         break;
     default: System.out.println("Invalid Entry");
     } // end of switch case
